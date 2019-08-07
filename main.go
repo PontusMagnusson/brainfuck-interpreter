@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/golang-collections/collections/stack"
 )
 
 // 30kb recommended for program memory space
 var data [30000]int
 var ptr = 0
+var stk = stack.New()
 
 func main() {
 	filePath := os.Args[1]
@@ -51,4 +54,13 @@ func main() {
 	for _, bit := range data[:100] {
 		fmt.Printf("%v ", bit)
 	}
+}
+
+func contains(arr []byte, a byte) bool {
+	for _, b := range arr {
+		if a == b {
+			return true
+		}
+	}
+	return false
 }
