@@ -10,8 +10,9 @@ import (
 
 // 30kb recommended for program memory space
 var data [30000]int
+var instructions []byte
 var ptr = 0
-var stk = stack.New()
+var stk = stack.New() // Maybe not needed?
 
 func main() {
 	filePath := os.Args[1]
@@ -22,16 +23,17 @@ func main() {
 		panic(err)
 	}
 
-	instructions, err := ioutil.ReadAll(file)
+	instructions, err = ioutil.ReadAll(file)
 	fmt.Println(instructions)
-	fmt.Println(len(instructions))
 
-	for _, ins := range instructions {
-		switch ins {
+	for insPtr := 0; insPtr < len(instructions); insPtr++ {
+		switch instructions[insPtr] {
 		case 43: // +
 			data[ptr]++
 		case 45: // -
 			data[ptr]--
+		case 46:
+			fmt.Printf("%v", string(data[ptr]))
 		case 62: // >
 			ptr++
 		case 60: // <
@@ -39,19 +41,27 @@ func main() {
 		case 91: // [
 			{
 				if data[ptr] == 0 {
-					// set ptr to bit after matching ]
+					// set insPtr to bit after matching ]
+					fmt.Printf("Skipping loop at %d \n", insPtr)
+					loopRange := getLoopEndIndex(insPtr)
+					insPtr = insPtr + loopRange
+				} else {
+					stk.Push(insPtr) // Save location of loop start
 				}
 			}
 		case 93:
 			{
 				if data[ptr] != 0 {
-					// set ptr to previous [ in the instruction queue
+					insPtr = stk.Peek().(int)
+				} else {
+					stk.Pop()
 				}
 			}
 		}
 	}
-
+	fmt.Println("")
 	for _, bit := range data[:100] {
+
 		fmt.Printf("%v ", bit)
 	}
 }
@@ -63,4 +73,27 @@ func contains(arr []byte, a byte) bool {
 		}
 	}
 	return false
+}
+
+func getLoopEndIndex(loopStart int) int {
+	relIndex := 0
+	relDepth := 0
+
+	for i, c := range instructions[loopStart+1:] {
+		if c == 91 { // [
+			fmt.Printf("Found nested loop at rel %d \n", i)
+			relDepth++
+		}
+		if c == 93 { // ]
+			if relDepth > 0 {
+				fmt.Printf("Found end of nested loop %d \n", i)
+				relDepth--
+			} else {
+				fmt.Printf("Found loop end at %d \n", i)
+				relIndex = i
+				break
+			}
+		}
+	}
+	return relIndex
 }
