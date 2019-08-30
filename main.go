@@ -14,7 +14,7 @@ import (
 var data [30000]byte
 var instructions []byte
 var ptr = 0
-var stk = stack.New() // Maybe not needed?
+var loopStarts = stack.New()
 
 func main() {
 	filePath := os.Args[1]
@@ -35,12 +35,13 @@ func main() {
 
 	for insPtr := 0; insPtr < len(instructions); insPtr++ {
 		fmt.Printf("[%v : %v]\n", insPtr, string(instructions[insPtr]))
+		fmt.Printf("Value at current address (%v): %v\n", ptr, data[ptr])
 		switch instructions[insPtr] {
 		case 43: // +
 			data[ptr]++
-		case 44:
+		case 44: // ,
 			{
-				fmt.Printf("Reading byte from io, [%d]", insPtr)
+				fmt.Printf("Reading byte from io, [%d]\n", insPtr)
 				reader := bufio.NewReader(os.Stdin)
 				input, _ := reader.ReadByte()
 				data[ptr] = input
@@ -58,21 +59,21 @@ func main() {
 				if data[ptr] == 0 {
 					// set insPtr to bit after matching ]
 					loopRange := getLoopEndIndex(insPtr)
-					insPtr = insPtr + loopRange
+					insPtr = insPtr + loopRange + 1
 				} else {
-					stk.Push(insPtr) // Save location of loop start
+					loopStarts.Push(insPtr) // Save location of loop start
 				}
 			}
 		case 93: // ]
 			{
-				fmt.Printf("Stack len: %d\n", stk.Len())
 				if data[ptr] != 0 {
-					insPtr = stk.Peek().(int)
+					insPtr = loopStarts.Peek().(int)
 				} else {
-					stk.Pop()
+					loopStarts.Pop()
 				}
 			}
 		}
+		fmt.Printf("Stack len: %d\n", loopStarts.Len())
 	}
 }
 
