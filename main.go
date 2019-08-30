@@ -31,11 +31,11 @@ func main() {
 
 	instructions = cleanInstructions(dirtyIns)
 
-	fmt.Printf("%v\n", string(instructions))
+	//fmt.Printf("%v\n", string(instructions))
 
 	for insPtr := 0; insPtr < len(instructions); insPtr++ {
-		fmt.Printf("[%v : %v]\n", insPtr, string(instructions[insPtr]))
-		fmt.Printf("Value at current address (%v): %v\n", ptr, data[ptr])
+		//fmt.Printf("[%v : %v]\n", insPtr, string(instructions[insPtr]))
+		//fmt.Printf("Value at current address (%v): %v\n", ptr, data[ptr])
 		switch instructions[insPtr] {
 		case 43: // +
 			data[ptr]++
@@ -73,7 +73,7 @@ func main() {
 				}
 			}
 		}
-		fmt.Printf("Stack len: %d\n", loopStarts.Len())
+		//fmt.Printf("Stack len: %d\n", loopStarts.Len())
 	}
 }
 
